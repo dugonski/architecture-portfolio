@@ -156,7 +156,9 @@ As faces fora de qualquer ambiente formam a base do projeto: o piso continua vis
 
 ## Deploy
 
-O site é publicado no GitHub Pages manualmente, pelo workflow `.github/workflows/deploy.yml`. Os pushes na `main` não publicam nada: quando quiser atualizar o site, vá em _Actions → Deploy to GitHub Pages → Run workflow_ (branch `main`).
+O site é publicado no GitHub Pages manualmente, pelo workflow `.github/workflows/deploy.yml`. Os pushes na `main` não publicam nada: quando quiser atualizar o site, vá em _Actions → Deploy to GitHub Pages → Run workflow_ e deixe o campo **Branch to publish** como `main`.
+
+Para pré-visualizar uma branch antes do merge, rode o mesmo workflow informando o nome dela nesse campo. O GitHub Pages hospeda um único site, então a prévia substitui o site publicado até a `main` ser publicada de novo.
 
 - **Configuração (uma única vez):** em _Settings → Pages → Build and deployment_, escolha _Source: GitHub Actions_.
 - **Caminho base:** o workflow usa o nome do repositório (`/architecture-portfolio/`) e copia o `index.html` para `404.html`, para que links diretos como `/projetos/brinquedoteca` funcionem.
