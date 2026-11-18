@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/context';
 import type { Project } from '../types';
+import { Magnetic } from './motion/Magnetic';
 
 interface ProjectChapterProps {
   project: Project;
@@ -9,33 +10,13 @@ interface ProjectChapterProps {
   total: number;
 }
 
-/** A large, alternating panel that previews a project on the home page. */
+/**
+ * A large, alternating panel that previews a project on the home page.
+ * Animations come from the page's `usePageAnimations` attributes.
+ */
 export function ProjectChapter({ project, index, total }: ProjectChapterProps) {
   const { t, l, lang } = useI18n();
-  const ref = useRef<HTMLLIElement>(null);
-  const [visible, setVisible] = useState(false);
   const [active, setActive] = useState(0);
-
-  // Reveal the panel the first time it scrolls into view.
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-    if (!('IntersectionObserver' in window)) {
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.15 },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
 
   const href = `/projetos/${project.slug}`;
   const pad = (value: number) => String(value).padStart(2, '0');
@@ -48,21 +29,31 @@ export function ProjectChapter({ project, index, total }: ProjectChapterProps) {
   ].filter((tag): tag is string => Boolean(tag));
 
   return (
-    <li ref={ref} className="chapter" data-visible={visible ? '' : undefined}>
+    <li className="chapter">
       <div className="chapter__media">
-        <Link to={href} className="chapter__stage" aria-label={l(project.title)}>
+        <Link
+          to={href}
+          className="chapter__stage"
+          aria-label={l(project.title)}
+          data-reveal="image"
+          data-cursor={t('cursor.view')}
+        >
           {project.model && <span className="chapter__badge">{t('home.has3d')}</span>}
-          {project.renders.map((render, i) => (
-            <img
-              key={render.src}
-              src={render.src}
-              alt={i === active ? l(render.caption) : ''}
-              data-active={i === active ? '' : undefined}
-              loading={index === 0 && i === 0 ? 'eager' : 'lazy'}
-            />
-          ))}
+          <span className="chapter__parallax" data-parallax>
+            <span className="chapter__zoom" data-media>
+              {project.renders.map((render, i) => (
+                <img
+                  key={render.src}
+                  src={render.src}
+                  alt={i === active ? l(render.caption) : ''}
+                  data-active={i === active ? '' : undefined}
+                  loading={index === 0 && i === 0 ? 'eager' : 'lazy'}
+                />
+              ))}
+            </span>
+          </span>
         </Link>
-        <ul className="chapter__thumbs">
+        <ul className="chapter__thumbs" data-reveal="stagger">
           {project.renders.map((render, i) => (
             <li key={render.src}>
               <button
@@ -82,20 +73,28 @@ export function ProjectChapter({ project, index, total }: ProjectChapterProps) {
 
       <div className="chapter__text">
         <p className="chapter__number">
-          <strong>{pad(index + 1)}</strong>/ {pad(total)}
+          <strong data-split="chars">{pad(index + 1)}</strong>
+          <span data-reveal="fade">/ {pad(total)}</span>
+          <span className="chapter__number-line" data-reveal="rule" aria-hidden="true" />
         </p>
         <h3 className="chapter__title display">
-          <Link to={href}>{l(project.title)}</Link>
+          <Link to={href} data-split="chars">
+            {l(project.title)}
+          </Link>
         </h3>
-        <p className="chapter__summary">{l(project.summary)}</p>
-        <ul className="chapter__tags">
+        <p className="chapter__summary" data-split="lines" data-delay="0.15">
+          {l(project.summary)}
+        </p>
+        <ul className="chapter__tags" data-reveal="stagger" data-delay="0.25">
           {tags.map((tag) => (
             <li key={tag}>{tag}</li>
           ))}
         </ul>
-        <Link to={href} className="chapter__link">
-          {t('home.view')}
-        </Link>
+        <Magnetic>
+          <Link to={href} className="chapter__link" data-reveal="fade" data-delay="0.35">
+            {t('home.view')}
+          </Link>
+        </Magnetic>
       </div>
     </li>
   );

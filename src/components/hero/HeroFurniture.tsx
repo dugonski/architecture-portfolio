@@ -2,6 +2,7 @@ import { ContactShadows } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { OrthographicCamera, Plane, Raycaster, Vector2, Vector3, type Group } from 'three';
+import { entryDelay } from '../../lib/gsap';
 import { furniture } from './furniture';
 
 /**
@@ -57,7 +58,18 @@ function randomTilt() {
   return new Vector2((Math.random() - 0.5) * 1.1, (Math.random() - 0.5) * 1.1);
 }
 
-function FallingPiece({ drop, position, instant }: { drop: Drop; position: Vector3; instant: boolean }) {
+function FallingPiece({
+  drop,
+  position,
+  instant,
+  wait,
+}: {
+  drop: Drop;
+  position: Vector3;
+  instant: boolean;
+  /** Seconds to wait before the first piece drops (e.g. while the intro plays). */
+  wait: number;
+}) {
   const outer = useRef<Group>(null);
   const inner = useRef<Group>(null);
   const start = useRef<number | null>(null);
@@ -79,7 +91,7 @@ function FallingPiece({ drop, position, instant }: { drop: Drop; position: Vecto
     const dt = Math.min(rawDelta, 1 / 30);
     const b = body.current;
     start.current ??= clock.elapsedTime;
-    if (clock.elapsedTime - start.current < drop.delay && !b.landed) {
+    if (clock.elapsedTime - start.current < wait + drop.delay && !b.landed) {
       group.visible = false;
       return;
     }
@@ -154,9 +166,10 @@ interface SceneProps {
   /** Free space on each side of the hero text, in pixels. */
   gutters: { left: number; right: number };
   instant: boolean;
+  wait: number;
 }
 
-function Scene({ gutters, instant }: SceneProps) {
+function Scene({ gutters, instant, wait }: SceneProps) {
   const { size, camera, pointer } = useThree();
   const target = useMemo(() => new Vector3(0, 0.6, 0), []);
 
@@ -199,7 +212,7 @@ function Scene({ gutters, instant }: SceneProps) {
       <directionalLight position={[4, 9, 3]} intensity={1.6} />
       <directionalLight position={[-6, 4, 6]} intensity={0.35} />
       {placements.map(({ drop, position }) => (
-        <FallingPiece key={drop.kind} drop={drop} position={position} instant={instant} />
+        <FallingPiece key={drop.kind} drop={drop} position={position} instant={instant} wait={wait} />
       ))}
       <ContactShadows position={[0, 0.001, 0]} scale={40} resolution={1024} blur={2.4} opacity={0.32} far={2.5} />
     </>
@@ -216,6 +229,8 @@ interface HeroFurnitureProps {
 /** Furniture that falls into the empty sides of the hero. */
 export default function HeroFurniture({ eventSource, content }: HeroFurnitureProps) {
   const [gutters, setGutters] = useState({ left: 0, right: 0 });
+  // Drop once the intro curtain has lifted.
+  const [wait] = useState(() => entryDelay());
   const instant = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
 
   // Runs after the whole page has mounted: when the home page is revisited this
@@ -257,7 +272,7 @@ export default function HeroFurniture({ eventSource, content }: HeroFurniturePro
       }
       gl={{ antialias: true, alpha: true }}
     >
-      <Scene gutters={gutters} instant={instant} />
+      <Scene gutters={gutters} instant={instant} wait={wait} />
     </Canvas>
   );
 }

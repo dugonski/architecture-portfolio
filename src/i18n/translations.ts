@@ -43,6 +43,7 @@ const pt = {
   'gallery.open': 'Ampliar imagem',
 
   'viewer.loading': 'Carregando modelo',
+  'viewer.error': 'Não foi possível carregar o modelo 3D. Recarregue a página para tentar de novo.',
   'viewer.parts': 'Ambientes',
   'viewer.whole': 'Projeto completo',
   'viewer.mode': 'Exibição',
@@ -78,6 +79,12 @@ const pt = {
   'contact.send': 'Enviar mensagem',
   'contact.thanks': 'Obrigada',
 
+  'footer.ctaEyebrow': 'Tem um projeto em mente?',
+  'footer.cta': 'Vamos conversar',
+  'cursor.view': 'Ver',
+  'cursor.zoom': 'Ampliar',
+  'cursor.contact': 'Contato',
+  'home.scroll': 'Role',
   'notFound.title': 'Página não encontrada',
   'notFound.back': 'Ver os projetos',
 };
@@ -127,6 +134,7 @@ const en: Record<TranslationKey, string> = {
   'gallery.open': 'Enlarge image',
 
   'viewer.loading': 'Loading model',
+  'viewer.error': 'The 3D model could not be loaded. Reload the page to try again.',
   'viewer.parts': 'Areas',
   'viewer.whole': 'Whole project',
   'viewer.mode': 'Display',
@@ -162,6 +170,12 @@ const en: Record<TranslationKey, string> = {
   'contact.send': 'Send message',
   'contact.thanks': 'Thank you',
 
+  'footer.ctaEyebrow': 'Have a project in mind?',
+  'footer.cta': "Let's talk",
+  'cursor.view': 'View',
+  'cursor.zoom': 'Zoom',
+  'cursor.contact': 'Contact',
+  'home.scroll': 'Scroll',
   'notFound.title': 'Page not found',
   'notFound.back': 'See the projects',
 };

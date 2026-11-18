@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { usePageAnimations } from '../lib/usePageAnimations';
 import { RuleHeading } from '../components/RuleHeading';
 import { site, type TimelineEntry } from '../data/site';
 import { useI18n } from '../i18n/context';
@@ -6,7 +8,7 @@ function Timeline({ entries }: { entries: TimelineEntry[] }) {
   const { l } = useI18n();
 
   return (
-    <ol className="timeline">
+    <ol className="timeline" data-reveal="stagger">
       {entries.map((entry) => (
         <li key={entry.title.pt + entry.period.pt} className="timeline__item">
           <p className="timeline__period">{l(entry.period)}</p>
@@ -32,19 +34,27 @@ function Timeline({ entries }: { entries: TimelineEntry[] }) {
 
 export default function AboutPage() {
   const { t, l } = useI18n();
+  const page = useRef<HTMLElement>(null);
+  usePageAnimations(page);
 
   return (
-    <section className="page container">
-      <RuleHeading as="p">{t('about.title')}</RuleHeading>
-      <h1 className="page__title display">{site.name}</h1>
+    <section ref={page} className="page container">
+      <RuleHeading as="p" hero>
+        {t('about.title')}
+      </RuleHeading>
+      <h1 className="page__title display" data-split="chars" data-hero data-delay="0.1">
+        {site.name}
+      </h1>
 
       <div className="about">
         <div>
           {site.bio.map((paragraph) => (
-            <p key={paragraph.pt}>{l(paragraph)}</p>
+            <p key={paragraph.pt} data-split="lines">
+              {l(paragraph)}
+            </p>
           ))}
         </div>
-        <aside className="about__aside">
+        <aside className="about__aside" data-reveal="stagger">
           <h2 className="about__label">{t('about.skills')}</h2>
           <ul className="about__list">
             {site.skills.map((skill) => (

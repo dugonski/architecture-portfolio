@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useI18n } from '../i18n/context';
 import type { Localized } from '../types';
 
@@ -35,46 +36,51 @@ export function useLightbox(images: LightboxImage[]) {
 
   const current = active === null ? null : images[active];
 
-  const element = current && (
-    <div className="lightbox" role="dialog" aria-modal="true" aria-label={l(current.caption)} onClick={close}>
-      <img src={current.src} alt={l(current.caption)} onClick={(event) => event.stopPropagation()} />
-      <p className="lightbox__caption">{l(current.caption)}</p>
-      <button
-        type="button"
-        className="lightbox__button lightbox__close"
-        onClick={close}
-        aria-label={t('gallery.close')}
-      >
-        ×
-      </button>
-      {images.length > 1 && (
-        <>
-          <button
-            type="button"
-            className="lightbox__button lightbox__prev"
-            onClick={(event) => {
-              event.stopPropagation();
-              step(-1);
-            }}
-            aria-label={t('gallery.prev')}
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            className="lightbox__button lightbox__next"
-            onClick={(event) => {
-              event.stopPropagation();
-              step(1);
-            }}
-            aria-label={t('gallery.next')}
-          >
-            ›
-          </button>
-        </>
-      )}
-    </div>
-  );
+  // Rendered on <body>: the smooth-scroll content is transformed, which would
+  // break a fixed overlay placed inside it.
+  const element =
+    current &&
+    createPortal(
+      <div className="lightbox" role="dialog" aria-modal="true" aria-label={l(current.caption)} onClick={close}>
+        <img src={current.src} alt={l(current.caption)} onClick={(event) => event.stopPropagation()} />
+        <p className="lightbox__caption">{l(current.caption)}</p>
+        <button
+          type="button"
+          className="lightbox__button lightbox__close"
+          onClick={close}
+          aria-label={t('gallery.close')}
+        >
+          ×
+        </button>
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="lightbox__button lightbox__prev"
+              onClick={(event) => {
+                event.stopPropagation();
+                step(-1);
+              }}
+              aria-label={t('gallery.prev')}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="lightbox__button lightbox__next"
+              onClick={(event) => {
+                event.stopPropagation();
+                step(1);
+              }}
+              aria-label={t('gallery.next')}
+            >
+              ›
+            </button>
+          </>
+        )}
+      </div>,
+      document.body,
+    );
 
   return { open: setActive, element };
 }

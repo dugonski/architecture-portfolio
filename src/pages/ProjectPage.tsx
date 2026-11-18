@@ -1,10 +1,12 @@
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Figure } from '../components/Figure';
 import { useLightbox, type LightboxImage } from '../components/useLightbox';
 import { RuleHeading } from '../components/RuleHeading';
+import { ViewerBoundary } from '../components/viewer/ViewerBoundary';
 import { projects } from '../data/projects';
 import { useI18n } from '../i18n/context';
+import { usePageAnimations } from '../lib/usePageAnimations';
 import type { Project } from '../types';
 import NotFoundPage from './NotFoundPage';
 
@@ -21,6 +23,8 @@ export default function ProjectPage() {
 function ProjectContent({ project, index }: { project: Project; index: number }) {
   const { t, l, lang } = useI18n();
   const number = new Intl.NumberFormat(lang === 'pt' ? 'pt-BR' : 'en');
+  const page = useRef<HTMLElement>(null);
+  usePageAnimations(page);
 
   // One lightbox for every image on the page, in reading order.
   const sheetImages = useMemo<LightboxImage[]>(
@@ -51,21 +55,25 @@ function ProjectContent({ project, index }: { project: Project; index: number })
   const next = projects[(index + 1) % projects.length];
 
   return (
-    <article className="container">
+    <article ref={page} className="container">
       <header className="project-cover">
         <div className="project-cover__header">
-          <RuleHeading as="p">
-            {t('project.label')} {index + 1}
+          <RuleHeading as="p" hero>
+            {t('project.label')} {String(index + 1).padStart(2, '0')}
           </RuleHeading>
-          <Link to="/#sumario" className="back-link">
+          <Link to="/#sumario" className="back-link" data-reveal="fade" data-hero data-delay="0.3">
             ← {t('project.back')}
           </Link>
         </div>
 
         <div>
-          <h1 className="project-cover__title display">{l(project.title)}</h1>
-          <p className="project-cover__text">{l(project.description)}</p>
-          <p className="project-meta">
+          <h1 className="project-cover__title display" data-split="chars" data-hero data-delay="0.1">
+            {l(project.title)}
+          </h1>
+          <p className="project-cover__text" data-split="lines" data-hero data-delay="0.45">
+            {l(project.description)}
+          </p>
+          <p className="project-meta" data-reveal="fade" data-hero data-delay="0.7">
             {[
               t(`category.${project.category}`),
               project.area ? `${number.format(project.area)} m²` : null,
@@ -76,9 +84,13 @@ function ProjectContent({ project, index }: { project: Project; index: number })
           </p>
         </div>
 
-        <img className="project-cover__image" src={project.cover} alt={l(project.renders[0].caption)} />
+        <div className="project-cover__media" data-reveal="image" data-hero data-delay="0.2">
+          <span className="project-cover__parallax" data-parallax>
+            <img className="project-cover__image" src={project.cover} alt={l(project.renders[0].caption)} data-media />
+          </span>
+        </div>
 
-        <ul className="project-tools">
+        <ul className="project-tools" data-reveal="stagger">
           {project.tools.map((tool) => (
             <li key={tool.name + tool.use.pt}>
               <strong>{tool.name}</strong>
@@ -91,10 +103,16 @@ function ProjectContent({ project, index }: { project: Project; index: number })
       {project.model && (
         <section className="project-section" aria-labelledby="modelo">
           <RuleHeading id="modelo">{t('project.model')}</RuleHeading>
-          <p className="section-lead">{t('project.modelLead')}</p>
-          <Suspense fallback={<div className="viewer" />}>
-            <ModelViewer model={project.model} projectArea={project.area} projectTitle={l(project.title)} />
-          </Suspense>
+          <p className="section-lead" data-split="lines">
+            {t('project.modelLead')}
+          </p>
+          <div data-reveal="fade">
+            <ViewerBoundary fallback={<p className="viewer viewer--error">{t('viewer.error')}</p>}>
+              <Suspense fallback={<div className="viewer" />}>
+                <ModelViewer model={project.model} projectArea={project.area} projectTitle={l(project.title)} />
+              </Suspense>
+            </ViewerBoundary>
+          </div>
         </section>
       )}
 
@@ -160,7 +178,7 @@ function ProjectContent({ project, index }: { project: Project; index: number })
       {project.details.length > 0 && (
         <section className="project-section">
           <RuleHeading>{t('project.details')}</RuleHeading>
-          <div className="sheets">
+          <div className="sheets" data-reveal="stagger">
             {project.details.map((sheet, i) => (
               <Figure key={sheet.src} image={sheetImages[i]} onOpen={() => lightbox.open(offset.details + i)}>
                 <span className="sheet-label">
@@ -186,7 +204,7 @@ function ProjectContent({ project, index }: { project: Project; index: number })
                 <th scope="col">{t('project.application')}</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-reveal="stagger">
               {project.materials.map((material) => (
                 <tr key={material.swatch}>
                   <td>
@@ -203,13 +221,17 @@ function ProjectContent({ project, index }: { project: Project; index: number })
 
       {projects.length > 1 && (
         <nav className="project-pager" aria-label={t('nav.projects')}>
-          <Link to={`/projetos/${previous.slug}`}>
-            <small>← {t('project.previous')}</small>
-            <span>{l(previous.title)}</span>
+          <Link to={`/projetos/${next.slug}`} className="project-pager__next" data-cursor={t('cursor.view')}>
+            <small data-reveal="fade">{t('project.next')} →</small>
+            <span className="project-pager__title display" data-split="chars">
+              {l(next.title)}
+            </span>
+            <span className="project-pager__media" data-reveal="image">
+              <img src={next.cover} alt="" loading="lazy" data-media />
+            </span>
           </Link>
-          <Link to={`/projetos/${next.slug}`}>
-            <small>{t('project.next')} →</small>
-            <span>{l(next.title)}</span>
+          <Link to={`/projetos/${previous.slug}`} className="project-pager__previous" data-reveal="fade">
+            ← {t('project.previous')}: {l(previous.title)}
           </Link>
         </nav>
       )}

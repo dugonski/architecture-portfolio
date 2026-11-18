@@ -18,8 +18,9 @@ export function Figure({ image, onOpen, caption = true, children }: FigureProps)
       className="figure-button"
       onClick={onOpen}
       aria-label={`${t('gallery.open')}: ${l(image.caption)}`}
+      data-cursor={t('cursor.zoom')}
     >
-      <span className="figure-frame" style={{ display: 'block' }}>
+      <span className="figure-frame" style={{ display: 'block' }} data-reveal="image">
         <img src={image.src} alt={l(image.caption)} loading="lazy" />
       </span>
       {children ?? (caption && <span className="figure-caption">{l(image.caption)}</span>)}
